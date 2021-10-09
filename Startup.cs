@@ -1,15 +1,11 @@
+using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace SysTech
 {
@@ -30,7 +26,30 @@ namespace SysTech
             {
                 dbOptions.ConnString = Configuration.GetConnectionString("SQLite");
             });
-            //IOptions что б было, но я бы предпочёл в данном случае хранить как статик поле в классе подключения к БД, а контейнер как-то совсем не в тему
+
+            services.AddTransient<IUserService, UserService>();
+
+            services.Configure<AuthOptions>(Configuration.GetSection("AuthOptions"));
+            var authOptions = Configuration.GetSection("AuthOptions").Get<AuthOptions>();
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+            }).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    RequireExpirationTime = true,
+                    ValidIssuer = authOptions.Issuer,
+                    ValidAudience = authOptions.Audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authOptions.SecureKey))
+                };
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
