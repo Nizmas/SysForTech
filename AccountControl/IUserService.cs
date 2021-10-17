@@ -8,7 +8,6 @@ namespace SysTech
     public interface IUserService
     {
         bool IsValidUser(string username, string password);
-        bool UserCreate(string username, string password, string name);
-        bool IsActiveUser(string username);
+        bool UserCreate(string username, string password);
     }
 }

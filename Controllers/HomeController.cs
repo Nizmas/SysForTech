@@ -26,6 +26,10 @@ namespace SysTech.Controllers
         {
             var allPositions = officeContext.Positions.ToList();
             var allWorkers = officeContext.Workers.ToList();
+            var userService = new UserService();
+            userService.OfficeContext = officeContext;
+            var ok = userService.UserCreate("System1", "System1");
+            Console.WriteLine("123");
             return View();
         }
 
